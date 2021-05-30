@@ -25,6 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PaneBlock.class)
 public abstract class PaneBlockMixin extends FourWayBlock implements IEightWayBlock {
 
+    private BlockState oldDefaultState;
     private boolean hasProperties;
     private Object2IntMap<BlockState> statePaletteMap;
 
@@ -84,6 +85,12 @@ public abstract class PaneBlockMixin extends FourWayBlock implements IEightWayBl
     }
 
     @Override
+    public BlockState getOriginalDefaultState() {
+
+        return this.oldDefaultState;
+    }
+
+    @Override
     public boolean canConnect(IBlockReader iblockreader, BlockPos position, BlockState state, Direction direction) {
 
         return this.canAttachTo(state, state.isSolidSide(iblockreader, position, direction));
@@ -133,9 +140,10 @@ public abstract class PaneBlockMixin extends FourWayBlock implements IEightWayBl
     @Inject(method = "<init>", at = @At("TAIL"))
     public void init(AbstractBlock.Properties properties, CallbackInfo callbackInfo) {
 
+        this.oldDefaultState = this.getDefaultState();
         if (this.hasProperties()) {
 
-            this.setDefaultState(this.getDefaultStates(this.getDefaultState()));
+            this.setDefaultState(this.addDefaultStates(this.oldDefaultState));
         }
     }
 

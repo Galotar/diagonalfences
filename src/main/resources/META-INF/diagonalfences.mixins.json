@@ -5,8 +5,12 @@
   "package": "com.fuzs.diagonalfences.mixin",
   "refmap": "diagonalfences.refmap.json",
   "mixins": [
+    "accessor.IBlockStateAccessor",
+    "BlockMixin",
+    "BlockStateMixin",
     "FenceBlockMixin",
-    "PaneBlockMixin"
+    "PaneBlockMixin",
+    "SimpleBlockStateProviderMixin"
   ],
   "client": [
   ],

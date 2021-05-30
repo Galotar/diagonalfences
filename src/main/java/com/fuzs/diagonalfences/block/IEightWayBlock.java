@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
-public interface IEightWayBlock {
+public interface IEightWayBlock extends IGenerationStateBlock {
 
     BooleanProperty NORTH_EAST = BooleanProperty.create("north_east");
     BooleanProperty SOUTH_EAST = BooleanProperty.create("south_east");
@@ -52,13 +52,21 @@ public interface IEightWayBlock {
 
     boolean hasProperties();
 
+    BlockState getOriginalDefaultState();
+
     boolean canConnect(IBlockReader iblockreader, BlockPos position, BlockState state, Direction direction);
 
     boolean canConnectDiagonally();
 
     boolean canConnectDiagonally(BlockState blockstate);
 
-    default BlockState getDefaultStates(BlockState defaultState) {
+    @Override
+    default BlockState getGenerationState() {
+
+        return this.getOriginalDefaultState();
+    }
+
+    default BlockState addDefaultStates(BlockState defaultState) {
 
         return defaultState.with(NORTH_EAST, Boolean.FALSE).with(SOUTH_EAST, Boolean.FALSE).with(SOUTH_WEST, Boolean.FALSE).with(NORTH_WEST, Boolean.FALSE);
     }

@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(FenceBlock.class)
 public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayBlock {
 
+    private BlockState oldDefaultState;
     private boolean hasProperties;
     private Object2IntMap<BlockState> statePaletteMap;
 
@@ -86,6 +87,12 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
     }
 
     @Override
+    public BlockState getOriginalDefaultState() {
+
+        return this.oldDefaultState;
+    }
+
+    @Override
     public boolean canConnect(IBlockReader iblockreader, BlockPos position, BlockState state, Direction direction) {
 
         return this.canConnect(state, state.isSolidSide(iblockreader, position, direction), direction);
@@ -108,9 +115,10 @@ public abstract class FenceBlockMixin extends FourWayBlock implements IEightWayB
     @Inject(method = "<init>", at = @At("TAIL"))
     public void init(AbstractBlock.Properties properties, CallbackInfo callbackInfo) {
 
+        this.oldDefaultState = this.getDefaultState();
         if (this.hasProperties()) {
 
-            this.setDefaultState(this.getDefaultStates(this.getDefaultState()));
+            this.setDefaultState(this.addDefaultStates(this.oldDefaultState));
         }
     }
 
