@@ -2,6 +2,7 @@ package fuzs.diagonalfences.world.level.block;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import fuzs.diagonalfences.DiagonalFences;
 import fuzs.diagonalfences.api.world.level.block.DiagonalBlock;
 import fuzs.diagonalfences.core.EightWayDirection;
 import fuzs.diagonalfences.world.phys.shapes.NoneVoxelShape;
@@ -10,6 +11,7 @@ import fuzs.diagonalfences.world.phys.shapes.VoxelUtils;
 import fuzs.puzzleslib.util.PuzzlesUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -24,6 +26,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -157,11 +160,17 @@ public interface EightWayBlock extends DiagonalBlock {
     default VoxelShape[] getShapes(float nodeWidth, float extensionWidth, float nodeHeight, float extensionBottom, float extensionHeight) {
 
         ArrayList<Float> dimensions = Lists.newArrayList(nodeWidth, extensionWidth, nodeHeight, extensionBottom, extensionHeight);
-        return DIMENSIONS_TO_SHAPE_CACHE.computeIfAbsent(dimensions, dimension -> this.makeDiagonalShapes(nodeWidth, extensionWidth, nodeHeight, extensionBottom, extensionHeight));
+        DiagonalFences.LOGGER.info("Requested shape for block {} with dimensions {}", Registry.BLOCK.getKey((Block) this).toString(), dimensions);
+        return DIMENSIONS_TO_SHAPE_CACHE.computeIfAbsent(dimensions, dimension -> {
+            DiagonalFences.LOGGER.info("No state for block {} with dimensions {} available, newly constructing...", Registry.BLOCK.getKey((Block) this).toString(), dimension);
+            return this.makeDiagonalShapes(nodeWidth, extensionWidth, nodeHeight, extensionBottom, extensionHeight);
+        });
     }
 
     default VoxelCollection[] makeDiagonalShapes(float nodeWidth, float extensionWidth, float nodeHeight, float extensionBottom, float extensionHeight) {
 
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         float nodeStart = 8.0F - nodeWidth;
         float nodeEnd = 8.0F + nodeWidth;
         float extensionStart = 8.0F - extensionWidth;
@@ -188,7 +197,10 @@ public interface EightWayBlock extends DiagonalBlock {
         VoxelShape[] sideShapes = new VoxelShape[]{verticalShapes[2], verticalShapes[3], verticalShapes[0], verticalShapes[1], diagonalShapes[2], diagonalShapes[3], diagonalShapes[0], diagonalShapes[1]};
         VoxelShape[] particleSideShapes = new VoxelShape[]{verticalShapes[2], verticalShapes[3], verticalShapes[0], verticalShapes[1], diagonalParticleShapes[2], diagonalParticleShapes[3], diagonalParticleShapes[0], diagonalParticleShapes[1]};
 
-        return this.constructStateShapes(nodeShape, sideShapes, particleSideShapes);
+        VoxelCollection[] voxelCollections = this.constructStateShapes(nodeShape, sideShapes, particleSideShapes);
+        stopWatch.stop();
+        DiagonalFences.LOGGER.info("Constructing shapes for block {} took {}ms", Registry.BLOCK.getKey((Block) this).toString(), stopWatch.getTime());
+        return voxelCollections;
     }
 
     default VoxelCollection[] constructStateShapes(VoxelShape nodeShape, VoxelShape[] directionalShapes, VoxelShape[] particleDirectionalShapes) {

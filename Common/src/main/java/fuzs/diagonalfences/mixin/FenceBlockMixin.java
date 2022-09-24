@@ -1,7 +1,7 @@
 package fuzs.diagonalfences.mixin;
 
-import fuzs.diagonalfences.world.level.block.EightWayBlock;
 import fuzs.diagonalfences.init.ModRegistry;
+import fuzs.diagonalfences.world.level.block.EightWayBlock;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.BlockPos;
